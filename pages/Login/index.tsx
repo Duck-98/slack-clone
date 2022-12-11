@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Header, Label, Input, Button, LinkContainer, Form, Error } from '../SignUp/style';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
 
 interface Props {
   email: string;
@@ -10,27 +12,32 @@ interface Props {
 }
 
 function Login() {
+  const { data: userData, error, mutate } = useSWR('http://localhost:3080/api/users', fetcher);
+  console.log(userData, 'fetcherr');
   const navigate = useNavigate();
-  const [loginError, setLoginError] = useState('');
+  const [loginError, setLoginError] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Props>();
-  const onSubmit = (data: Props) => {
-    console.log(data);
+  const onSubmit = (loginData: Props) => {
+    // console.log(loginData);
     axios
-      .post(`http://localhost:3080/api/users/login`, data)
+      .post(`http://localhost:3080/api/users/login`, loginData, { withCredentials: true })
       .then((response) => {
         console.log(response);
-        // navigate('/login');
+        mutate();
       })
       .catch((error) => {
         console.log(error.response);
-        setLoginError(error.response.data);
+        setLoginError(error.response?.data?.statusCode === 401);
       })
       .finally(() => {});
   };
+  if (userData) {
+    navigate('/workspace/channel');
+  }
   console.log(errors);
   return (
     <div id="container">
@@ -72,7 +79,7 @@ function Login() {
           </div>
           <Error>{errors.password && errors.password.message}</Error>
         </Label>
-        {loginError && <Error>{loginError}</Error>}
+        {loginError && <Error>이메일과 비밀번호 조합이 일치하지 않습니다.</Error>}
         <Button type="submit">로그인</Button>
       </Form>
       <LinkContainer>
