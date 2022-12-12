@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { Header, Label, Input, Button, LinkContainer, Form, Error } from './style';
 import { useForm } from 'react-hook-form';
 import { User } from 'types/user';
 import axios from 'axios';
-
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
 interface Props {
   email: string;
   nickname: string;
@@ -12,6 +13,13 @@ interface Props {
 }
 
 function SignUp() {
+  const {
+    data: userData,
+    error,
+    mutate: revalidateUser,
+  } = useSWR('http://localhost:3080/api/users', fetcher, {
+    dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
+  });
   const navigate = useNavigate();
   const [signUpError, setSignUpError] = useState('');
   const {
@@ -35,7 +43,9 @@ function SignUp() {
       })
       .finally(() => {});
   };
-  console.log(errors);
+  if (userData) {
+    return <Navigate to="/workspace/channel" replace />;
+  }
   return (
     <div id="container">
       <Header>Slack</Header>

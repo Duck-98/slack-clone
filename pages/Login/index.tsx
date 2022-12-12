@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Header, Label, Input, Button, LinkContainer, Form, Error } from '../SignUp/style';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -14,7 +14,6 @@ interface Props {
 function Login() {
   const { data: userData, error, mutate } = useSWR('http://localhost:3080/api/users', fetcher);
   console.log(userData, 'fetcherr');
-  const navigate = useNavigate();
   const [loginError, setLoginError] = useState(false);
   const {
     register,
@@ -27,17 +26,20 @@ function Login() {
       .post(`http://localhost:3080/api/users/login`, loginData, { withCredentials: true })
       .then((response) => {
         console.log(response);
-        mutate();
+        mutate(response.data, false);
       })
       .catch((error) => {
-        console.log(error.response);
+        console.log(error.response, false);
         setLoginError(error.response?.data?.statusCode === 401);
       })
       .finally(() => {});
   };
   if (userData) {
-    navigate('/workspace/channel');
+    return <Navigate to="/workspace/channel" replace />;
+  } else if (userData === undefined) {
+    return <div>Loading...</div>;
   }
+
   console.log(errors);
   return (
     <div id="container">
