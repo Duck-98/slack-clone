@@ -4,7 +4,7 @@ type Props = {
   children?: ReactNode;
   style: CSSProperties;
   show: boolean;
-  onCloseModal: () => void;
+  onCloseModal: (e: any) => void;
   closeButton?: boolean;
 };
 const Menu = ({ children, style, show, onCloseModal, closeButton }: Props) => {
