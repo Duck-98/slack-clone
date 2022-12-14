@@ -15,6 +15,7 @@ import {
   ProfileModal,
   RightMenu,
   WorkspaceButton,
+  WorkspaceModal,
   WorkspaceName,
   Workspaces,
   WorkspaceWrapper,
@@ -27,6 +28,7 @@ import { IUser, IWorkspace } from 'types/type';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/style';
 import useInput from '@hooks/useInput';
+import CreateChannelModal from '@components/CreateChannelModal';
 /* import */
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -43,10 +45,12 @@ const WorkSpace = ({ children }: Props) => {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
 
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showCreateWorkSpaceModal, setShowCreateWorkSpaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+  const [showWorkSpaceModal, setShowWorkSpaceModal] = useState(false);
   const onLogOut = useCallback(() => {
     axios
       .post('http://localhost:3080/api/users/logout', null, {
@@ -68,7 +72,8 @@ const WorkSpace = ({ children }: Props) => {
 
   const onCloseModal = useCallback(() => {
     setShowCreateWorkSpaceModal(false);
-  }, []);
+    setShowCreateChannelModal(false);
+  }, []); // 화면에 있는 모든 모달을 닫아주는 함수
 
   const onClickCreateWorkSpace = useCallback(() => {
     setShowCreateWorkSpaceModal(true);
@@ -79,12 +84,6 @@ const WorkSpace = ({ children }: Props) => {
       e.preventDefault();
       if (!newWorkspace || !newWorkspace.trim()) return; // trim => 문자열 양쪽 공백제거(띄어쓰기 방지)
       if (!newUrl || !newUrl.trim()) return;
-      /*
-    POST /workspaces
-  워크스페이스를 생성함
-  body: { workspace: string(이름), url: string(주소) }
-  return: IWorkspace
-    */
       axios
         .post(
           'http://localhost:3080/api/workspaces',
@@ -106,6 +105,14 @@ const WorkSpace = ({ children }: Props) => {
     },
     [newWorkspace, newUrl],
   );
+
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal(true);
+  }, []);
+
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkSpaceModal((prev) => !prev);
+  }, []);
 
   if (!userData) {
     return <Navigate to="/login" replace />;
@@ -144,19 +151,25 @@ const WorkSpace = ({ children }: Props) => {
           <AddButton onClick={onClickCreateWorkSpace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>Slack</WorkspaceName>
+          <WorkspaceName onClick={toggleWorkspaceModal}>Slack</WorkspaceName>
           <MenuScroll>
-            {/* <Menu></Menu> */}
-            MenuScroll
+            <Menu show={showWorkSpaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
+              <WorkspaceModal>
+                <button>워크스페이스에 사용자 초대</button>
+                <button onClick={onClickAddChannel}>채널만들기</button>
+                <button onClick={onLogOut}>로그아웃</button>
+              </WorkspaceModal>
+            </Menu>
           </MenuScroll>
         </Channels>
         <Chats>
           <Routes>
-            <Route path="channel" element={<Channel />} />
-            <Route path="dm" element={<DirectMessage />} />
+            <Route path="/:workspace/channel/:channel" element={<Channel />} />
+            <Route path="/:workspace/dm/:id" element={<DirectMessage />} />
           </Routes>
         </Chats>
       </WorkspaceWrapper>
+      // input이 있는 컴포넌트는 따로 분리하는게 리렌더링을 덜 하게 해서 효율적이다.
       <Modal show={showCreateWorkSpaceModal} onCloseModal={onCloseModal}>
         <form onSubmit={onCreateWorkspace}>
           <Label id="workspace-label">
@@ -170,6 +183,11 @@ const WorkSpace = ({ children }: Props) => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+      />
     </div>
   );
 };
