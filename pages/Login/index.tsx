@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
+import { toast } from 'react-toastify';
 
 interface Props {
   email: string;
@@ -30,12 +31,13 @@ function Login() {
       })
       .catch((error) => {
         console.log(error.response, false);
+        toast.error(error.response?.data, { position: 'bottom-center' });
         setLoginError(error.response?.data?.statusCode === 401);
       })
       .finally(() => {});
   };
   if (userData) {
-    return <Navigate to="/workspace/channel" replace />;
+    return <Navigate to={`/workspace/${userData.Workspaces[0].id}/channel/${userData.Workspaces[0].name}`} replace />;
   } else if (userData === undefined) {
     return <div>Loading...</div>;
   }

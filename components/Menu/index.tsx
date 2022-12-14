@@ -11,6 +11,9 @@ const Menu = ({ children, style, show, onCloseModal, closeButton }: Props) => {
   const stopPropagation = useCallback((e: any) => {
     e.stopPropagation();
   }, []);
+  if (!show) {
+    return null;
+  }
 
   return (
     <CreateMenu onClick={onCloseModal}>
