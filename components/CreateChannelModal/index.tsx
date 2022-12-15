@@ -58,7 +58,7 @@ return: IChannel
         )
         .then((response) => {
           setShowCreateChannelModal(false);
-          channelMutate();
+          channelMutate(response.data, false);
           setNewChannel('');
         })
         .catch((error) => {
