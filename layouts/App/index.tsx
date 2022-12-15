@@ -13,7 +13,7 @@ const App: FC = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/workspace/:workspace/*" element={<WorkSpace />} />
+      <Route path="/workspace/:workspace/channel/:channel" element={<WorkSpace />} />
     </Routes>
   );
 };
