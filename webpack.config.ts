@@ -82,7 +82,7 @@ const config: Configuration = {
     static: { directory: path.resolve(__dirname) },
     proxy: {
       '/api/': {
-        target: 'http://localhost:3095',
+        target: 'http://localhost:3080',
         changeOrigin: true,
       },
     },
