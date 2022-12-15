@@ -3,7 +3,7 @@ import React, { ReactNode, useCallback, useState } from 'react';
 import axios from 'axios';
 import useSWR, { mutate } from 'swr';
 import { toast } from 'react-toastify';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import {
   AddButton,
   Channels,
@@ -24,11 +24,12 @@ import gravatar from 'gravatar';
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
 import { Link } from 'react-router-dom';
-import { IUser, IWorkspace } from 'types/type';
+import { IChannel, IUser, IWorkspace } from 'types/type';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/style';
 import useInput from '@hooks/useInput';
 import CreateChannelModal from '@components/CreateChannelModal';
+
 /* import */
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -37,6 +38,7 @@ type Props = {
   children?: ReactNode;
 };
 const WorkSpace = ({ children }: Props) => {
+  const { channel, workspace } = useParams();
   const {
     data: userData,
     error,
@@ -44,7 +46,13 @@ const WorkSpace = ({ children }: Props) => {
   } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
-
+  const {
+    data: channelData,
+    error: channelError,
+    mutate: channelMutate,
+  } = useSWR<IChannel[]>(userData ? `http://localhost:3080/api/workspaces/${workspace}/channels` : null, fetcher, {
+    dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
+  });
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showCreateWorkSpaceModal, setShowCreateWorkSpaceModal] = useState(false);
@@ -57,11 +65,11 @@ const WorkSpace = ({ children }: Props) => {
         withCredentials: true,
       })
       .then(() => {
-        revalidateUser(false, false);
+        revalidateUser(false);
       })
       .catch((error) => {
         console.dir(error);
-        // toast.error(error.response?.data, { position: 'bottom-center' });
+        toast.error(error.response?.data, { position: 'bottom-center' });
       });
   }, []);
 
@@ -82,21 +90,24 @@ const WorkSpace = ({ children }: Props) => {
   const onCreateWorkspace = useCallback(
     (e: any) => {
       e.preventDefault();
-      if (!newWorkspace || !newWorkspace.trim()) return; // trim => 문자열 양쪽 공백제거(띄어쓰기 방지)
+      if (!newWorkspace || !newWorkspace.trim()) return;
       if (!newUrl || !newUrl.trim()) return;
       axios
         .post(
           'http://localhost:3080/api/workspaces',
-          { workspace: newWorkspace, url: newUrl },
+          {
+            workspace: newWorkspace,
+            url: newUrl,
+          },
           {
             withCredentials: true,
           },
         )
         .then(() => {
           mutate(false, false);
-          setShowCreateWorkSpaceModal(false); // 입력이 완료되면 모달창 닫음
-          setNewUrl('');
+          setShowCreateWorkSpaceModal(false);
           setNewWorkspace('');
+          setNewUrl('');
         })
         .catch((error) => {
           console.dir(error);
@@ -143,7 +154,7 @@ const WorkSpace = ({ children }: Props) => {
         <Workspaces>
           {userData?.Workspaces?.map((ws: IWorkspace) => {
             return (
-              <Link key={ws.id} to={`/workspace/${ws.id}/channel/${ws.name}`}>
+              <Link key={ws.id} to={`/workspace/${ws.name}/channel/${ws.id}`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
@@ -160,12 +171,15 @@ const WorkSpace = ({ children }: Props) => {
                 <button onClick={onLogOut}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
+            {channelData?.map((channel) => (
+              <div>{channel.name}</div>
+            ))}
           </MenuScroll>
         </Channels>
         <Chats>
           <Routes>
-            <Route path="/:workspace/channel/:channel" element={<Channel />} />
-            <Route path="/:workspace/dm/:id" element={<DirectMessage />} />
+            <Route path="/channel/:channel" element={<Channel />} />
+            <Route path="/dm/:id" element={<DirectMessage />} />
           </Routes>
         </Chats>
       </WorkspaceWrapper>
