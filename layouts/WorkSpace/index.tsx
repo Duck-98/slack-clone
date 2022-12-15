@@ -29,6 +29,10 @@ import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/style';
 import useInput from '@hooks/useInput';
 import CreateChannelModal from '@components/CreateChannelModal';
+import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
+import InviteChannelModal from '@components/InviteChannelModal';
+import ChannelList from '@components/ChannelList';
+import DMList from '@components/DmList';
 
 /* import */
 const Channel = loadable(() => import('@pages/Channel'));
@@ -39,26 +43,22 @@ type Props = {
 };
 const WorkSpace = ({ children }: Props) => {
   const { channel, workspace } = useParams();
-  const {
-    data: userData,
-    error,
-    mutate: revalidateUser,
-  } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
+
+  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
-  const {
-    data: channelData,
-    error: channelError,
-    mutate: channelMutate,
-  } = useSWR<IChannel[]>(userData ? `http://localhost:3080/api/workspaces/${workspace}/channels` : null, fetcher, {
-    dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
-  });
+
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
-  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [showCreateWorkSpaceModal, setShowCreateWorkSpaceModal] = useState(false);
+  const [showWorkSpaceModal, setShowWorkSpaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
+
+  const [showUserProfile, setShowUserProfile] = useState(false);
+
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
-  const [showWorkSpaceModal, setShowWorkSpaceModal] = useState(false);
+
   const onLogOut = useCallback(() => {
     axios
       .post('http://localhost:3080/api/users/logout', null, {
@@ -71,20 +71,6 @@ const WorkSpace = ({ children }: Props) => {
         console.dir(error);
         toast.error(error.response?.data, { position: 'bottom-center' });
       });
-  }, []);
-
-  const onClickUserProfile = useCallback((e: any) => {
-    e.stopPropagation();
-    setShowUserProfile((prev) => !prev);
-  }, []);
-
-  const onCloseModal = useCallback(() => {
-    setShowCreateWorkSpaceModal(false);
-    setShowCreateChannelModal(false);
-  }, []); // 화면에 있는 모든 모달을 닫아주는 함수
-
-  const onClickCreateWorkSpace = useCallback(() => {
-    setShowCreateWorkSpaceModal(true);
   }, []);
 
   const onCreateWorkspace = useCallback(
@@ -117,12 +103,32 @@ const WorkSpace = ({ children }: Props) => {
     [newWorkspace, newUrl],
   );
 
+  const onClickUserProfile = useCallback((e: any) => {
+    e.stopPropagation();
+    setShowUserProfile((prev) => !prev);
+  }, []);
+
+  const onCloseModal = useCallback(() => {
+    setShowCreateWorkSpaceModal(false);
+    setShowCreateChannelModal(false);
+    setShowInviteWorkspaceModal(false);
+    setShowInviteChannelModal(false);
+  }, []); // 화면에 있는 모든 모달을 닫아주는 함수
+
+  const onClickCreateWorkSpace = useCallback(() => {
+    setShowCreateWorkSpaceModal(true);
+  }, []);
+
   const onClickAddChannel = useCallback(() => {
     setShowCreateChannelModal(true);
   }, []);
 
   const toggleWorkspaceModal = useCallback(() => {
     setShowWorkSpaceModal((prev) => !prev);
+  }, []);
+
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal((prev) => !prev);
   }, []);
 
   if (!userData) {
@@ -166,14 +172,13 @@ const WorkSpace = ({ children }: Props) => {
           <MenuScroll>
             <Menu show={showWorkSpaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
               <WorkspaceModal>
-                <button>워크스페이스에 사용자 초대</button>
+                <button onClick={onClickInviteWorkspace}>워크스페이스에 사용자 초대</button>
                 <button onClick={onClickAddChannel}>채널만들기</button>
                 <button onClick={onLogOut}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
-            {channelData?.map((channel) => (
-              <div>{channel.name}</div>
-            ))}
+            <ChannelList />
+            <DMList userData={userData} />
           </MenuScroll>
         </Channels>
         <Chats>
@@ -201,6 +206,16 @@ const WorkSpace = ({ children }: Props) => {
         show={showCreateChannelModal}
         onCloseModal={onCloseModal}
         setShowCreateChannelModal={setShowCreateChannelModal}
+      />
+      <InviteWorkspaceModal
+        show={showInviteWorkspaceModal}
+        onCloseModal={onCloseModal}
+        setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
+      />
+      <InviteChannelModal
+        show={showInviteChannelModal}
+        onCloseModal={onCloseModal}
+        setShowInviteChannelModal={setShowInviteChannelModal}
       />
     </div>
   );
