@@ -37,7 +37,11 @@ function Login() {
       .finally(() => {});
   };
   if (userData) {
-    return <Navigate to={`/workspace/${userData.Workspaces[0].id}/channel/${userData.Workspaces[0].name}`} replace />;
+    return (
+      // <Navigate to="/workspace/sleact/channel/" replace />
+      <Navigate to="/workspace/Sleact/channel/1" replace />
+      // <Navigate to={`/workspace/${userData?.Workspaces[0]?.id}/channel/${userData?.Workspaces[0]?.name}`} replace />
+    );
   } else if (userData === undefined) {
     return <div>Loading...</div>;
   }
