@@ -42,8 +42,6 @@ type Props = {
   children?: ReactNode;
 };
 const WorkSpace = ({ children }: Props) => {
-  const { channel, workspace } = useParams();
-
   const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
@@ -183,7 +181,16 @@ const WorkSpace = ({ children }: Props) => {
         </Channels>
         <Chats>
           <Routes>
-            <Route path="/channel/:channel" element={<Channel />} />
+            <Route
+              path="/channel/:channel"
+              element={
+                <Channel
+                  show={showInviteChannelModal}
+                  onCloseModal={onCloseModal}
+                  setShowInviteChannelModal={setShowInviteChannelModal}
+                />
+              }
+            />
             <Route path="/dm/:id" element={<DirectMessage />} />
           </Routes>
         </Chats>
@@ -211,11 +218,6 @@ const WorkSpace = ({ children }: Props) => {
         show={showInviteWorkspaceModal}
         onCloseModal={onCloseModal}
         setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
-      />
-      <InviteChannelModal
-        show={showInviteChannelModal}
-        onCloseModal={onCloseModal}
-        setShowInviteChannelModal={setShowInviteChannelModal}
       />
     </div>
   );
