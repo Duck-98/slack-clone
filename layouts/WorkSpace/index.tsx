@@ -3,7 +3,7 @@ import React, { ReactNode, useCallback, useState } from 'react';
 import axios from 'axios';
 import useSWR, { mutate } from 'swr';
 import { toast } from 'react-toastify';
-import { Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import {
   AddButton,
   Channels,
@@ -24,13 +24,12 @@ import gravatar from 'gravatar';
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
 import { Link } from 'react-router-dom';
-import { IChannel, IUser, IWorkspace } from 'types/type';
+import { IUser, IWorkspace } from 'types/type';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/style';
 import useInput from '@hooks/useInput';
 import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
-import InviteChannelModal from '@components/InviteChannelModal';
 import ChannelList from '@components/ChannelList';
 import DMList from '@components/DmList';
 
@@ -176,7 +175,7 @@ const WorkSpace = ({ children }: Props) => {
               </WorkspaceModal>
             </Menu>
             <ChannelList />
-            <DMList userData={userData} />
+            <DMList />
           </MenuScroll>
         </Channels>
         <Chats>
