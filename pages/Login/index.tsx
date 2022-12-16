@@ -39,8 +39,8 @@ function Login() {
   if (userData) {
     return (
       // <Navigate to="/workspace/sleact/channel/" replace />
-      <Navigate to="/workspace/Sleact/channel/1" replace />
-      // <Navigate to={`/workspace/${userData?.Workspaces[0]?.id}/channel/${userData?.Workspaces[0]?.name}`} replace />
+      // <Navigate to="/workspace/Sleact/channel/1" replace />
+      <Navigate to={`/workspace/${userData?.Workspaces[0]?.name}/channel/${userData?.Workspaces[0]?.id}`} replace />
     );
   } else if (userData === undefined) {
     return <div>Loading...</div>;
