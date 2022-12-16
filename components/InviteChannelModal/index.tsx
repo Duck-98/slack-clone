@@ -2,9 +2,9 @@ import Modal from '@components/Modal';
 import useInput from '@hooks/useInput';
 import { Button, Input, Label } from '@pages/SignUp/style';
 import fetcher from '@utils/fetcher';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { toast } from 'react-toastify';
-import { IChannel, IUser } from 'types/type';
+import { IUser } from 'types/type';
 import useSWR from 'swr';
 import axios from 'axios';
 import { useParams } from 'react-router';
@@ -13,10 +13,12 @@ interface Props {
   show: boolean;
   onCloseModal: () => void;
   setShowInviteChannelModal: React.Dispatch<React.SetStateAction<boolean>>;
+  channel?: string | undefined;
 }
 
-const InviteChannelModal = ({ show, onCloseModal, setShowInviteChannelModal }: Props) => {
-  const { channel, workspace } = useParams();
+const InviteChannelModal = ({ show, onCloseModal, setShowInviteChannelModal, channel }: Props) => {
+  const { workspace } = useParams();
+
   const { data: userData } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
