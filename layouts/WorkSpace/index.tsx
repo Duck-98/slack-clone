@@ -1,5 +1,5 @@
 import fetcher from '@utils/fetcher';
-import React, { ReactNode, useCallback, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import useSWR, { mutate } from 'swr';
 import { toast } from 'react-toastify';
@@ -24,7 +24,7 @@ import gravatar from 'gravatar';
 import loadable from '@loadable/component';
 import Menu from '@components/Menu';
 import { Link } from 'react-router-dom';
-import { IUser, IWorkspace } from 'types/type';
+import { IChannel, IUser, IWorkspace } from 'types/type';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/style';
 import useInput from '@hooks/useInput';
@@ -32,6 +32,8 @@ import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import ChannelList from '@components/ChannelList';
 import DMList from '@components/DmList';
+import useSocket from '@utils/useSocket';
+import { useParams } from 'react-router-dom';
 
 /* import */
 const Channel = loadable(() => import('@pages/Channel'));
@@ -41,10 +43,6 @@ type Props = {
   children?: ReactNode;
 };
 const WorkSpace = ({ children }: Props) => {
-  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
-    dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
-  });
-
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [showCreateWorkSpaceModal, setShowCreateWorkSpaceModal] = useState(false);
@@ -56,6 +54,33 @@ const WorkSpace = ({ children }: Props) => {
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
 
+  const { workspace } = useParams<{ workspace: string }>();
+
+  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
+    dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
+  });
+  const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
+  const { data: channelData } = useSWR<IChannel[]>(
+    userData ? `http://localhost:3080/api/workspaces/${workspace}/channels` : null,
+    fetcher,
+    {
+      dedupingInterval: 2000,
+    },
+  );
+
+  const [socket, disconnect] = useSocket(workspace);
+  useEffect(() => {
+    if (channelData && userData && socket) {
+      console.log(socket);
+      socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
+    }
+  }, [socket, channelData, userData]);
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
   const onLogOut = useCallback(() => {
     axios
       .post('http://localhost:3080/api/users/logout', null, {
@@ -194,7 +219,7 @@ const WorkSpace = ({ children }: Props) => {
           </Routes>
         </Chats>
       </WorkspaceWrapper>
-      // input이 있는 컴포넌트는 따로 분리하는게 리렌더링을 덜 하게 해서 효율적이다.
+      {/* input이 있는 컴포넌트는 따로 분리하는게 리렌더링을 덜 하게 해서 효율적이다. */}
       <Modal show={showCreateWorkSpaceModal} onCloseModal={onCloseModal}>
         <form onSubmit={onCreateWorkspace}>
           <Label id="workspace-label">
