@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import useSWR from 'swr';
 
@@ -6,6 +6,7 @@ import fetcher from '@utils/fetcher';
 import { IUser, IUserWithOnline, IDM } from 'types/type';
 import { NavLink, useParams } from 'react-router-dom';
 import { CollapseButton } from './style';
+import useSocket from '@utils/useSocket';
 
 const DMList = () => {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -25,10 +26,50 @@ const DMList = () => {
   const [countList, setCountList] = useState<{ [key: string]: number }>({});
   const [onlineList, setOnlineList] = useState<number[]>([]);
   const [count, setCount] = useState<number>(0);
+
+  const [socket] = useSocket(workspace);
   //   const [socket] = useSocket(workspace);
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);
   }, []);
+
+  const resetCount = useCallback((id: string | number) => {
+    setCountList((list) => {
+      return {
+        ...list,
+        [id]: 0,
+      };
+    });
+  }, []);
+
+  const onMessage = (data: IDM) => {
+    console.log('dm 옴');
+    setCountList((list) => {
+      return {
+        ...list,
+        [data.SenderId]: list[data.SenderId] ? list[data.SenderId] + 1 : 1,
+      };
+    });
+  };
+
+  useEffect(() => {
+    setOnlineList([]);
+    setCountList({});
+  }, [workspace]);
+
+  useEffect(() => {
+    socket?.on('onlineList', (data: number[]) => {
+      setOnlineList(data);
+    });
+    // socket?.on('dm', onMessage);
+    // console.log('socket on dm', socket?.hasListeners('dm'), socket);
+    return () => {
+      // socket?.off('dm', onMessage);
+      // console.log('socket off dm', socket?.hasListeners('dm'));
+      socket?.off('onlineList');
+    };
+  }, [socket]);
+
   return (
     <>
       <h2>
