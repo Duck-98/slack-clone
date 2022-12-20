@@ -13,7 +13,7 @@ interface Props {
 }
 
 function Login() {
-  const { data: userData, error, mutate } = useSWR('http://localhost:3080/api/users', fetcher);
+  const { data: userData, error, mutate } = useSWR('/api/users', fetcher);
   console.log(userData, 'fetcherr');
   const [loginError, setLoginError] = useState(false);
   const {
@@ -24,7 +24,7 @@ function Login() {
   const onSubmit = (loginData: Props) => {
     // console.log(loginData);
     axios
-      .post(`http://localhost:3080/api/users/login`, loginData, { withCredentials: true })
+      .post(`/api/users/login`, loginData, { withCredentials: true })
       .then((response) => {
         console.log(response);
         mutate(response.data, false);
@@ -38,9 +38,9 @@ function Login() {
   };
   if (userData) {
     return (
-      // <Navigate to="/workspace/sleact/channel/" replace />
+      <Navigate to="/workspace/sleact/channel/" replace />
       // <Navigate to="/workspace/Sleact/channel/1" replace />
-      <Navigate to={`/workspace/${userData?.Workspaces[0]?.name}/channel/${userData?.Workspaces[0]?.id}`} replace />
+      // <Navigate to={`/workspace/${userData?.Workspaces[0]?.name}/channel/${userData?.Workspaces[0]?.id}`} replace />
     );
   } else if (userData === undefined) {
     return <div>Loading...</div>;

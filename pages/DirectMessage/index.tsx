@@ -13,16 +13,16 @@ import axios from 'axios';
 
 function DirectMessage() {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
-  const { data: myData } = useSWR<IUser>('http://localhost:3080/api/users', fetcher, {
+  const { data: myData } = useSWR<IUser>('/api/users', fetcher, {
     dedupingInterval: 2000,
   });
 
-  const { data: userData } = useSWR(`http://localhost:3080/api/workspaces/${workspace}/users/${id}`, fetcher, {
+  const { data: userData } = useSWR(`/api/workspaces/${workspace}/users/${id}`, fetcher, {
     dedupingInterval: 2000,
   });
 
   const { data: chatData, mutate: chatMutate } = useSWR<IDM[]>(
-    `http://localhost:3080/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`,
+    `/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`,
     fetcher,
   );
   const [chat, onChangeChat, setChat] = useInput('');
@@ -40,9 +40,15 @@ dm 소켓 이벤트가 emit됨
       console.log(chat);
       if (chat?.trim()) {
         axios
-          .post(`/api/workspaces/${workspace}/dms/${id}/chats`, {
-            content: chat,
-          })
+          .post(
+            `/api/workspaces/${workspace}/dms/${id}/chats`,
+            {
+              content: chat,
+            },
+            {
+              withCredentials: true,
+            },
+          )
           .then((response) => {
             chatMutate();
             setChat(''); // 입력 후 채팅창 지우기

@@ -56,17 +56,13 @@ const WorkSpace = ({ children }: Props) => {
 
   const { workspace } = useParams<{ workspace: string }>();
 
-  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
+  const { data: userData, mutate: revalidateUser } = useSWR<IUser | false>('/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
-  const { data: channelData } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3080/api/workspaces/${workspace}/channels` : null,
-    fetcher,
-    {
-      dedupingInterval: 2000,
-    },
-  );
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher, {
+    dedupingInterval: 2000,
+  });
 
   const [socket, disconnect] = useSocket(workspace);
   useEffect(() => {
@@ -83,7 +79,7 @@ const WorkSpace = ({ children }: Props) => {
   }, [workspace, disconnect]);
   const onLogOut = useCallback(() => {
     axios
-      .post('http://localhost:3080/api/users/logout', null, {
+      .post('/api/users/logout', null, {
         withCredentials: true,
       })
       .then(() => {
@@ -102,7 +98,7 @@ const WorkSpace = ({ children }: Props) => {
       if (!newUrl || !newUrl.trim()) return;
       axios
         .post(
-          'http://localhost:3080/api/workspaces',
+          '/api/workspaces',
           {
             workspace: newWorkspace,
             url: newUrl,

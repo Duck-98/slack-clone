@@ -10,12 +10,12 @@ import useSocket from '@utils/useSocket';
 
 const DMList = () => {
   const { workspace } = useParams<{ workspace?: string }>();
-  const { data: userData } = useSWR<IUser>('http://localhost:3080/api/users', fetcher, {
+  const { data: userData } = useSWR<IUser>('/api/users', fetcher, {
     dedupingInterval: 2000,
   });
 
   const { data: memberData } = useSWR<IUserWithOnline[]>(
-    userData ? `http://localhost:3080/api/workspaces/${workspace}/members` : null,
+    userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
     {
       dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감

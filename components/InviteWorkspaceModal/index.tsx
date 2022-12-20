@@ -17,17 +17,13 @@ interface Props {
 
 const InviteWorkspaceModal = ({ show, onCloseModal, setShowInviteWorkspaceModal }: Props) => {
   const { workspace } = useParams();
-  const { data: userData } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
 
-  const { mutate: membersMutate } = useSWR<IUser[]>(
-    userData ? `http://localhost:3080/api/workspaces/${workspace}/members` : null,
-    fetcher,
-    {
-      dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
-    },
-  );
+  const { mutate: membersMutate } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher, {
+    dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
+  });
 
   const [newMember, onChangeNewMember, setNewMember] = useInput('');
 
@@ -47,7 +43,7 @@ return: 'ok'
       e.preventDefault();
       axios
         .post(
-          `http://localhost:3080/api/workspaces/${workspace}/members`,
+          `/api/workspaces/${workspace}/members`,
           {
             email: newMember,
           },

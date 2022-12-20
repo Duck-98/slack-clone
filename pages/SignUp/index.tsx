@@ -17,7 +17,7 @@ function SignUp() {
     data: userData,
     error,
     mutate: revalidateUser,
-  } = useSWR('http://localhost:3080/api/users', fetcher, {
+  } = useSWR('/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ function SignUp() {
     console.log(data);
     // console.log(data.length)
     axios
-      .post(`http://localhost:3080/api/users`, data)
+      .post(`/api/users`, data)
       .then((response) => {
         console.log(response);
         navigate('/login');

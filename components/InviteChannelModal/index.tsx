@@ -19,12 +19,12 @@ interface Props {
 const InviteChannelModal = ({ show, onCloseModal, setShowInviteChannelModal, channel }: Props) => {
   const { workspace } = useParams();
 
-  const { data: userData } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
 
   const { mutate: inviteMutate } = useSWR<IUser[]>(
-    userData ? `http://localhost:3080/api/workspaces/${workspace}/channels/${channel}/members` : null,
+    userData ? `/api/workspaces/${workspace}/channels/${channel}/members` : null,
     fetcher,
     {
       dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
@@ -49,7 +49,7 @@ return: 'ok'
       e.preventDefault();
       axios
         .post(
-          `http://localhost:3080/api/workspaces/${workspace}/channels/${channel}/members`,
+          `/api/workspaces/${workspace}/channels/${channel}/members`,
           {
             email: newMember,
           },

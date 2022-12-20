@@ -21,7 +21,7 @@ const CreateChannelModal = ({ show, onCloseModal, setShowCreateChannelModal }: P
     data: userData,
     error,
     mutate,
-  } = useSWR<IUser | false>('http://localhost:3080/api/users', fetcher, {
+  } = useSWR<IUser | false>('/api/users', fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
 
@@ -29,7 +29,7 @@ const CreateChannelModal = ({ show, onCloseModal, setShowCreateChannelModal }: P
     data: channelData,
     error: channelError,
     mutate: channelMutate,
-  } = useSWR<IChannel[]>(userData ? `http://localhost:3080/api/workspaces/${workspace}/channels` : null, fetcher, {
+  } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher, {
     dedupingInterval: 2000, // cache의 유지 시간(2초) -> 2초동안 아무리 많이 호출해도 한 번 useSWR이 요청감
   });
 
@@ -48,7 +48,7 @@ return: IChannel
       e.preventDefault();
       axios
         .post(
-          `http://localhost:3080/api/workspaces/${workspace}/channels`,
+          `/api/workspaces/${workspace}/channels`,
           {
             name: newChannel,
           },
