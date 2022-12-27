@@ -70,7 +70,7 @@ dm 소켓 이벤트가 emit됨
         <img src={gravatar.url(userData.email, { s: '24px', d: 'retro' })} alt={userData?.nickname} />
         <span>{userData?.nickname}</span>
       </Header>
-      <ChatList />
+      <ChatList chatData={chatData} />
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} />
     </Container>
   );
