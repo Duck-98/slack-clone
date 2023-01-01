@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Mention } from 'react-mentions';
+import { Mention, SuggestionDataItem } from 'react-mentions';
 import { useParams } from 'react-router-dom';
-import { ChatArea, Form, MentionsTextarea, SendButton, Toolbox } from './style';
+import { ChatArea, EachMention, Form, MentionsTextarea, SendButton, Toolbox } from './style';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import { IUser } from 'types/type';
 import autosize from 'autosize';
+import gravatar from 'gravatar';
 
 interface Props {
   chat: string;
@@ -44,6 +45,27 @@ const ChatBox = ({ chat, onSubmitForm, onChangeChat, placeholder }: Props) => {
     [onSubmitForm],
   );
 
+  const renderSuggestion = useCallback(
+    (
+      suggestion: SuggestionDataItem,
+      search: string,
+      highlightedDisplay: React.ReactNode,
+      index: number,
+      focus: boolean,
+    ): React.ReactNode => {
+      if (!memberData) return;
+      return (
+        <EachMention focus={focus}>
+          <img
+            src={gravatar.url(memberData[index].email, { s: '20px', d: 'retro' })}
+            alt={memberData[index].nickname}
+          />
+          <span>{highlightedDisplay}</span>
+        </EachMention>
+      );
+    },
+    [memberData],
+  );
   return (
     <ChatArea>
       <Form onSubmit={onSubmitForm}>
@@ -54,13 +76,14 @@ const ChatBox = ({ chat, onSubmitForm, onChangeChat, placeholder }: Props) => {
           onKeyDown={onKeydownChat}
           placeholder={placeholder}
           ref={textareaRef}
+          allowSuggestionsAboveCursor
         >
-          {/* <Mention
-               appendSpaceOnAdd
-               trigger="@"
-               data={memberData?.map((v) => ({ id: v.id, display: v.nickname })) || []}
-               renderSuggestion={renderSuggestion}
-            /> */}
+          <Mention
+            appendSpaceOnAdd
+            trigger="@"
+            data={memberData?.map((v) => ({ id: v.id, display: v.nickname })) || []}
+            renderSuggestion={renderSuggestion}
+          />
         </MentionsTextarea>
         <Toolbox>
           <SendButton
