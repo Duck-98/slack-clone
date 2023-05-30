@@ -6,6 +6,9 @@ import { User } from 'types/user';
 import axios from 'axios';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 interface Props {
   email: string;
   nickname: string;
@@ -39,6 +42,7 @@ function SignUp() {
       })
       .catch((error) => {
         console.log(error.response);
+        toast.error(error.response?.data, { position: 'top-right' });
         setSignUpError(error.response.data);
       })
       .finally(() => {});
@@ -48,6 +52,7 @@ function SignUp() {
   }
   return (
     <div id="container">
+      <ToastContainer />
       <Header>Slack</Header>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Label id="email-label">

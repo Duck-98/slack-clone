@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Props {
   email: string;
@@ -31,7 +32,8 @@ function Login() {
       })
       .catch((error) => {
         console.log(error.response, false);
-        toast.error(error.response?.data, { position: 'bottom-center' });
+        toast.error(error.response?.data, { position: 'top-right' });
+
         setLoginError(error.response?.data?.statusCode === 401);
       })
       .finally(() => {});
@@ -49,6 +51,7 @@ function Login() {
   console.log(errors);
   return (
     <div id="container">
+      <ToastContainer />
       <Header>Slack</Header>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Label id="email-label">
